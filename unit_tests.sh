@@ -16,17 +16,29 @@ for dataset in "${datasets[@]}"; do
       for few_shot in "${few_shot_options[@]}"; do
         for background_knowledge in "${background_knowledge_options[@]}"; do
           for history_signal_type in "${history_signal_types[@]}"; do
-            for history_k in "${history_k_values[@]}"; do
-              # Construct the command to execute
-              command="python launcher.py -d $dataset -m $model -pt $prompt_type $few_shot $background_knowledge -hst $history_signal_type -hk $history_k"
+            if [[ $history_signal_type == "recent-k" || $history_signal_type == "semantic-k" ]]; then
+              for history_k in "${history_k_values[@]}"; do
+                # Construct the command to execute
+                command="python launcher.py -d $dataset -m $model -pt $prompt_type $few_shot $background_knowledge -hst $history_signal_type -hk $history_k"
+                echo "Running command: $command"
+
+                # Execute the command
+                $command
+
+                # Add a delay if needed between command executions
+                sleep 1s
+              done
+            else
+              # Construct the command to execute without history_k
+              command="python launcher.py -d $dataset -m $model -pt $prompt_type $few_shot $background_knowledge -hst $history_signal_type"
               echo "Running command: $command"
-              
+
               # Execute the command
               $command
-              
+
               # Add a delay if needed between command executions
               sleep 1s
-            done
+            fi
           done
         done
       done
