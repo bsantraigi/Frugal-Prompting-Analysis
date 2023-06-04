@@ -52,7 +52,7 @@ def main():
             "prompt_len": random.randint(1, 10),
             "output_len": random.randint(1, 100)
         })
-
+        wandb.finish()
 
 if __name__ == "__main__":
     main()
