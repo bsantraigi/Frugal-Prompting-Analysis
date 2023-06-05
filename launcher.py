@@ -27,7 +27,13 @@ def cmdline_args(x=None):
         return parser.parse_args(x)
     else:
         return parser.parse_args()
-    
+
+def load_dataset(dataset, prompt_type, few_shot, background_knowledge, history_signal_type, history_k):
+    """Load dataset
+    """
+    if dataset == "MSC":
+        
+
 def main():
     args = cmdline_args()
     print(args)
@@ -35,7 +41,14 @@ def main():
     if args.wandb:
         wandb.init(project="frugal-prompts", config=arg_dict)
 
-    dataset = load_dataset(args.dataset, args.)
+    dataset = load_dataset(
+        dataset = args.dataset,
+        prompt_type = args.prompt_type,
+        few_shot = args.few_shot,
+        background_knowledge = args.background_knowledge,
+        history_signal_type = args.history_signal_type,
+        history_k = args.history_k
+    )
     
     # Test: report some random results to wandb for now
     if args.wandb:        
