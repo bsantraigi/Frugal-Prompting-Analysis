@@ -90,4 +90,55 @@ if __name__ == "__main__":
             print(f"Command: {exp}")
     
     # Save all evals to a csv file
-    pd.DataFrame(all_evals).to_csv("data/evals.csv", index=False)
+    df = pd.DataFrame(all_evals)
+
+    # Rename columns. prompt_len -> prompt, output_len -> output, BLEURT -> Bleurt, model -> Model
+    df = df.rename(columns={"prompt_len": "prompt", "output_len": "output", "BLEURT": "Bleurt", "model": "Model"})
+
+
+    df['Persona Signal'] = "None"
+    df['Persona Signal'][df['background_knowledge'] == True] = "Pegasus cnn/dm"
+
+    # df['History Signal'] = ""
+    # df['History Signal'][df['history_signal_type'] == "full"] = "Full"
+    # df['History Signal'][df['history_signal_type'] == "peg_cd"] = "Pegasus-CD"
+    # df['History Signal'][df['history_signal_type'] == "peg"] = "PegasusFT"
+    # df['History Signal'][df['history_signal_type'] == "bart"] = "BART"
+    # df['History Signal'][df['history_signal_type'] == "recent-k"] = "Recent-" + df['history_k'].astype(str)
+    # df['History Signal'][df['history_signal_type'] == "semantic-k"] = "Semantic-" + df['history_k'].astype(str)
+    # df['History Signal'][df['history_signal_type'] == "none"] = "None"
+    df.rename(columns={"history_signal_type": "History Signal"}, inplace=True)
+    df.replace({"History Signal": {
+        "full": "Full", 
+        "peg_cd": "Pegasus-CD", 
+        "peg": "PegasusFT",
+        "bart": "BART",
+        "recent-k": "Recent",
+        "semantic-k": "Semantic",
+        "none": "None"
+    }}, inplace=True)
+    df.loc[df['History Signal'] == "Recent", "History Signal"] += "-" + df['history_k'].astype(str)
+    df.loc[df['History Signal'] == "Semantic", "History Signal"] += "-" + df['history_k'].astype(str)
+
+    # Few shot -> "Orig", Zero shot -> "Short"
+    df['Prompt Type'] = ""
+    df['Prompt Type'][df['few_shot'] == True] = "Orig"
+    df['Prompt Type'][df['few_shot'] == False] = "Short"
+    # Add (ppl), if so
+    df['Prompt Type'][df['prompt_type'] == "ppl"] += " (ppl)"
+
+    # Rename model -> Model
+    df.rename(columns={"model": "Model"}, inplace=True)
+    # flan-t5 -> flanT5-XL, tk-instruct -> Tk-Instruct, T0 -> T0, dv3 -> text-davinci-003
+    df.replace({"Model": {"flan-t5": "flanT5-XL", "tk-instruct": "Tk-Instruct", "T0": "T0", "dv3": "text-davinci-003"}}, inplace=True)
+
+    # Extra dummy cols
+    used_cols = ['Model', 'Method', 'Persona Signal', 'History Signal', 'Prompt Type',
+        'BLEU', 'METEOR', 'rouge1', 'rouge2', 'rougeL', 'Bert-p', 'Bert-r',
+        'Bert-f1', 'DEB', 'Bleurt', 'output', 'prompt']
+    for col in used_cols:
+        if col not in df.columns:
+            print(f"Adding dummy col: {col}")
+            df[col] = 0.5
+
+    df.to_csv("data/evals.csv", index=False)
