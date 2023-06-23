@@ -92,6 +92,7 @@ if __name__ == "__main__":
     # Save all evals to a csv file
     df = pd.DataFrame(all_evals)
 
+
     # Rename columns. prompt_len -> prompt, output_len -> output, BLEURT -> Bleurt, model -> Model
     df = df.rename(columns={"prompt_len": "prompt", "output_len": "output", "BLEURT": "Bleurt", "model": "Model"})
 
@@ -140,5 +141,11 @@ if __name__ == "__main__":
         if col not in df.columns:
             print(f"Adding dummy col: {col}")
             df[col] = 0.5
+    
+    # dv3 has prompt len missing (-1). fill it in from other models, with exact same (history, persona and prompt_type)
+    query = df.loc[df['Model'] == "text-davinci-003", ['dataset', 'History Signal', 'Prompt Type', 'Persona Signal']]
+    prompt_of_flant5 = pd.merge(query, df.loc[df['Model'] == "flanT5-XL", ['dataset', 'History Signal', 'Prompt Type', 'Persona Signal', 'prompt']], on=['dataset', 'History Signal', 'Prompt Type', 'Persona Signal'], how='left')['prompt']
+    # df.loc[df['Model'] == "text-davinci-003", 'prompt'] = prompt_of_flant5    
+    df.loc[query.index, 'prompt'] = prompt_of_flant5.values
 
     df.to_csv("data/evals.csv", index=False)
