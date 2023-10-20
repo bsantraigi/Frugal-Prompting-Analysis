@@ -1,4 +1,4 @@
-# Frugal-Prompting-Evaluation
+# Frugal-Prompting-Analysis
 
 ## Steps
 
